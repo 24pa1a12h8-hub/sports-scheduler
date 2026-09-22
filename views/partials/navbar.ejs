@@ -1,0 +1,48 @@
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex items-center space-x-8">
+        <a href="/" class="flex items-center space-x-2">
+          <span class="text-2xl">🏆</span>
+          <span class="font-bold text-xl text-gray-900 tracking-tight">Sports<span class="text-green-600">Scheduler</span></span>
+        </a>
+        <div class="hidden md:flex space-x-4">
+          <a href="/sessions" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">All Sessions</a>
+          <% if (currentUser) { %>
+            <a href="/sessions/new" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">+ Create Session</a>
+            <% if (currentUser.role === 'admin') { %>
+              <a href="/admin/sports" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Manage Sports</a>
+              <a href="/admin/reports" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Analytics & Reports</a>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <% if (currentUser) { %>
+          <div class="flex items-center space-x-3">
+            <a href="<%= currentUser.role === 'admin' ? '/admin/dashboard' : '/dashboard' %>" class="flex items-center space-x-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full">
+              <span class="font-semibold"><%= currentUser.name %></span>
+              <span class="text-xs uppercase px-2 py-0.5 rounded-full font-bold <%= currentUser.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>">
+                <%= currentUser.role %>
+              </span>
+            </a>
+            <a href="/change-password" title="Change Password" class="text-gray-500 hover:text-gray-700 p-1.5 rounded-md text-sm">
+              🔑
+            </a>
+            <form action="/logout" method="POST" class="inline">
+              <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md transition duration-150">
+                Sign Out
+              </button>
+            </form>
+          </div>
+        <% } else { %>
+          <a href="/login" class="text-gray-700 hover:text-green-600 px-4 py-2 rounded-md text-sm font-medium">Log In</a>
+          <a href="/signup" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition duration-150">
+            Sign Up
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>

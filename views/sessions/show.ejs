@@ -1,0 +1,192 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/messages') %>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+  <!-- Cancelled Banner -->
+  <% if (session.status === 'cancelled') { %>
+    <div class="mb-6 bg-red-100 border-l-4 border-red-600 p-5 rounded-lg shadow-sm">
+      <div class="flex items-start">
+        <span class="text-2xl mr-3">🚫</span>
+        <div>
+          <h3 class="text-lg font-bold text-red-900">This Session Has Been Cancelled</h3>
+          <p class="text-sm text-red-800 mt-1">
+            <strong>Reason for cancellation:</strong> <%= session.cancellationReason %>
+          </p>
+          <p class="text-xs text-red-600 mt-1">
+            No further players may join this session.
+          </p>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+    <!-- Header banner -->
+    <div class="p-6 sm:p-8 bg-gradient-to-r <%= session.status === 'cancelled' ? 'from-gray-700 to-gray-800' : 'from-emerald-700 to-teal-800' %> text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <div class="flex items-center space-x-3 mb-2">
+          <span class="bg-white/20 text-white font-bold text-xs uppercase px-3 py-1 rounded-full">
+            <%= session.sport ? session.sport.name : 'Sport' %>
+          </span>
+          <% if (session.status === 'cancelled') { %>
+            <span class="bg-red-500 text-white font-bold text-xs uppercase px-3 py-1 rounded-full">Cancelled</span>
+          <% } else if (isPast) { %>
+            <span class="bg-gray-500 text-white font-bold text-xs uppercase px-3 py-1 rounded-full">Completed / Past</span>
+          <% } else if (isFull) { %>
+            <span class="bg-amber-400 text-gray-900 font-bold text-xs uppercase px-3 py-1 rounded-full">Full</span>
+          <% } else { %>
+            <span class="bg-green-400 text-gray-900 font-bold text-xs uppercase px-3 py-1 rounded-full">Open for Players</span>
+          <% } %>
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-tight"><%= session.venue %></h1>
+      </div>
+
+      <!-- Action Button (Join / Joined Status) -->
+      <div>
+        <% if (session.status !== 'cancelled' && !isPast) { %>
+          <% if (isParticipant) { %>
+            <span class="bg-emerald-400 text-emerald-950 font-bold text-sm px-4 py-2.5 rounded-lg shadow inline-flex items-center space-x-1.5">
+              <span>✓</span>
+              <span>You Have Joined</span>
+            </span>
+          <% } else if (!isFull) { %>
+            <form action="/sessions/<%= session.id %>/join" method="POST">
+              <button type="submit"
+                class="bg-emerald-400 hover:bg-emerald-300 text-gray-950 font-extrabold text-sm px-6 py-3 rounded-lg shadow-lg transition transform hover:-translate-y-0.5">
+                Join This Match
+              </button>
+            </form>
+          <% } else { %>
+            <span class="bg-amber-400 text-gray-950 font-bold text-sm px-4 py-2 rounded-lg">
+              Session is Full
+            </span>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Session Overview Details Grid (Sport, Date, Time, Venue, Created by) -->
+    <div class="p-6 sm:p-8 border-b border-gray-200 bg-gray-50/50">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+        <div>
+          <span class="text-gray-500 block text-xs uppercase font-semibold">Sport</span>
+          <span class="font-bold text-gray-900 text-base"><%= session.sport ? session.sport.name : 'N/A' %></span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-xs uppercase font-semibold">Date</span>
+          <span class="font-bold text-gray-900 text-base">📅 <%= session.date %></span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-xs uppercase font-semibold">Time</span>
+          <span class="font-bold text-gray-900 text-base">⏰ <%= session.time %></span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-xs uppercase font-semibold">Created By</span>
+          <span class="font-bold text-gray-900 text-base">
+            <%= session.creator ? session.creator.name : 'Unknown' %>
+            <% if (isCreator) { %><span class="text-xs text-green-600 font-normal">(You)</span><% } %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Participant Slots Display (Exact numbered slot representation) -->
+    <div class="p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Participants</h2>
+          <p class="text-sm text-gray-500">Player roster including organizer and confirmed participants</p>
+        </div>
+        <div class="mt-2 sm:mt-0 text-sm font-semibold">
+          <span class="text-gray-600">Remaining slots: </span>
+          <span class="text-emerald-600 font-extrabold text-base"><%= remainingSlots %></span>
+          <span class="text-gray-400 font-normal"> / <%= totalCapacity %> total</span>
+        </div>
+      </div>
+
+      <!-- Slots List -->
+      <div class="space-y-2.5">
+        <%
+          const participants = session.sessionParticipants || [];
+        %>
+
+        <% for (let i = 0; i < totalCapacity; i++) { %>
+          <% if (i < participants.length) { %>
+            <!-- Filled Slot -->
+            <div class="flex items-center justify-between p-3.5 bg-green-50 border border-green-200 rounded-lg">
+              <div class="flex items-center space-x-3">
+                <span class="w-7 h-7 bg-green-600 text-white font-bold rounded-full flex items-center justify-center text-xs">
+                  <%= i + 1 %>
+                </span>
+                <div>
+                  <span class="font-bold text-gray-900 text-sm">
+                    <%= participants[i].user ? participants[i].user.name : 'Player' %>
+                  </span>
+                  <% if (participants[i].userId === session.creatorId) { %>
+                    <span class="ml-2 text-xs bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">Organizer</span>
+                  <% } %>
+                  <% if (currentUser && participants[i].userId === currentUser.id) { %>
+                    <span class="ml-1 text-xs bg-green-200 text-green-900 font-semibold px-2 py-0.5 rounded-full">You</span>
+                  <% } %>
+                </div>
+              </div>
+              <span class="text-xs text-green-700 font-semibold">Joined</span>
+            </div>
+          <% } else { %>
+            <!-- Empty Slot -->
+            <div class="flex items-center justify-between p-3.5 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+              <div class="flex items-center space-x-3 text-gray-400">
+                <span class="w-7 h-7 bg-gray-200 text-gray-500 font-medium rounded-full flex items-center justify-center text-xs">
+                  <%= i + 1 %>
+                </span>
+                <span class="font-medium text-sm text-gray-500">Empty slot</span>
+              </div>
+              <span class="text-xs text-gray-400 italic">Open</span>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Session Section (Only for Creator or Admin) -->
+  <% if ((isCreator || isAdmin) && session.status !== 'cancelled') { %>
+    <div class="bg-white rounded-xl border border-red-200 shadow-sm p-6 sm:p-8">
+      <div class="flex items-center space-x-3 mb-4">
+        <span class="text-2xl">⚠️</span>
+        <div>
+          <h2 class="text-lg font-bold text-red-700">Cancel Session</h2>
+          <p class="text-xs text-gray-500">
+            As the <%= isCreator ? 'creator' : 'administrator' %>, you may cancel this session. A reason is required.
+          </p>
+        </div>
+      </div>
+
+      <form action="/sessions/<%= session.id %>/cancel" method="POST" class="space-y-4">
+        <div>
+          <label for="cancellationReason" class="block text-sm font-medium text-gray-700">
+            Cancellation Reason *
+          </label>
+          <input type="text" id="cancellationReason" name="cancellationReason" required
+            placeholder="e.g. Inclement weather, venue double-booked, organizer emergency..."
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm">
+        </div>
+
+        <button type="submit"
+          onclick="return confirm('Are you sure you want to cancel this sports session? All participants will be notified with your reason.');"
+          class="bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-5 py-2.5 rounded-lg shadow transition">
+          Confirm Cancellation
+        </button>
+      </form>
+    </div>
+  <% } %>
+
+  <div class="mt-8 flex justify-between">
+    <a href="/sessions" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+      &larr; Back to Sessions List
+    </a>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

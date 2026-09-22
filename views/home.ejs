@@ -1,0 +1,108 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<%- include('partials/messages') %>
+
+<main class="flex-grow">
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-br from-green-700 via-emerald-800 to-teal-900 text-white py-20 px-4 sm:px-6 lg:px-8 shadow-inner">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="inline-block bg-white/20 backdrop-blur-sm text-green-100 text-xs font-semibold uppercase tracking-wider py-1 px-3 rounded-full mb-4">
+        WD501 Advanced Backend Capstone
+      </span>
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+        Organize, Discover, and Join <br class="hidden sm:inline" />
+        <span class="text-emerald-300">Sports Sessions</span> In Seconds
+      </h1>
+      <p class="text-lg sm:text-xl text-emerald-100 mb-8 max-w-2xl mx-auto font-light">
+        A platform built for sports enthusiasts. Admins manage official sports and track popularity analytics, while players organize matches, reserve slots, and coordinate games effortlessly.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <% if (currentUser) { %>
+          <a href="/sessions" class="bg-white text-green-800 font-bold px-8 py-3.5 rounded-lg shadow-lg hover:bg-green-50 transition transform hover:-translate-y-0.5">
+            Browse Sessions
+          </a>
+          <a href="/sessions/new" class="bg-emerald-600 border border-emerald-400 text-white font-bold px-8 py-3.5 rounded-lg shadow-lg hover:bg-emerald-500 transition">
+            + Host a Match
+          </a>
+        <% } else { %>
+          <a href="/signup" class="bg-emerald-400 text-gray-900 font-bold px-8 py-3.5 rounded-lg shadow-lg hover:bg-emerald-300 transition transform hover:-translate-y-0.5">
+            Get Started Free
+          </a>
+          <a href="/login" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-3.5 rounded-lg border border-white/20 backdrop-blur-sm transition">
+            Log In
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features / Sports Grid -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Supported Sports</h2>
+      <p class="text-gray-500 mt-2">Active sports configured by system administrators</p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <% if (sports && sports.length > 0) { %>
+        <% sports.forEach(sport => { %>
+          <div class="bg-white border border-gray-200 hover:border-green-400 p-6 rounded-xl text-center shadow-sm hover:shadow transition duration-150 group">
+            <div class="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition duration-150 text-2xl">
+              ⚽
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg"><%= sport.name %></h3>
+            <a href="/sessions" class="text-xs text-green-600 font-semibold mt-2 inline-block hover:underline">Find matches &rarr;</a>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="text-gray-400 col-span-5 text-center py-6">No sports available yet. Log in as admin to add sports.</p>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Upcoming Sessions Preview -->
+  <% if (upcomingSessions && upcomingSessions.length > 0) { %>
+    <section class="bg-gray-100/70 border-t border-b border-gray-200 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Upcoming Matches</h2>
+            <p class="text-gray-500 mt-1">Jump into upcoming games looking for players</p>
+          </div>
+          <a href="/sessions" class="text-green-600 hover:text-green-700 font-semibold text-sm">View all &rarr;</a>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <% upcomingSessions.forEach(session => { %>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-start mb-3">
+                  <span class="bg-green-100 text-green-800 font-bold text-xs uppercase px-2.5 py-1 rounded-full">
+                    <%= session.sport ? session.sport.name : 'Sport' %>
+                  </span>
+                  <span class="text-xs font-medium text-gray-500">
+                    <%= session.additionalPlayersNeeded %> slots needed
+                  </span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1"><%= session.venue %></h3>
+                <p class="text-sm text-gray-500 mb-4">
+                  📅 <%= session.date %> &bull; ⏰ <%= session.time %>
+                </p>
+                <p class="text-xs text-gray-500">
+                  Organized by: <span class="font-medium text-gray-700"><%= session.creator ? session.creator.name : 'Unknown' %></span>
+                </p>
+              </div>
+              <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+                <a href="/sessions/<%= session.id %>" class="text-sm font-semibold text-green-600 hover:text-green-800">
+                  View Session Details &rarr;
+                </a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,175 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/messages') %>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div>
+      <div class="flex items-center space-x-2">
+        <span class="text-3xl">📊</span>
+        <h1 class="text-3xl font-extrabold text-gray-900">Analytics & Popularity Reports</h1>
+      </div>
+      <p class="text-sm text-gray-500 mt-1">Review session metrics and relative popularity of configured sports across any time period.</p>
+    </div>
+    <a href="/admin/dashboard" class="text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition">
+      &larr; Admin Dashboard
+    </a>
+  </div>
+
+  <!-- Date Range Filter Form -->
+  <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+    <form action="/admin/reports" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
+      <div class="w-full sm:w-auto">
+        <label for="startDate" class="block text-xs font-semibold text-gray-600 uppercase">From Date</label>
+        <input type="date" id="startDate" name="startDate" value="<%= startDate %>" required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500">
+      </div>
+
+      <div class="w-full sm:w-auto">
+        <label for="endDate" class="block text-xs font-semibold text-gray-600 uppercase">To Date</label>
+        <input type="date" id="endDate" name="endDate" value="<%= endDate %>" required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500">
+      </div>
+
+      <button type="submit"
+        class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold text-sm px-6 py-2.5 rounded-md shadow transition">
+        Filter Period
+      </button>
+    </form>
+  </div>
+
+  <!-- Summary Metric Card -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-indigo-800 to-purple-900 text-white p-6 rounded-xl shadow-sm">
+      <span class="text-xs uppercase font-bold tracking-wider text-indigo-200">Selected Window</span>
+      <div class="text-lg font-extrabold mt-1">
+        <%= startDate %> &rarr; <%= endDate %>
+      </div>
+      <p class="text-xs text-indigo-200 mt-2">Custom reporting window</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <span class="text-xs uppercase font-bold tracking-wider text-gray-500">Total Sessions in Period</span>
+      <div class="text-4xl font-extrabold text-green-600 mt-1"><%= totalSessions %></div>
+      <p class="text-xs text-gray-400 mt-2">Matches scheduled in selected dates</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <span class="text-xs uppercase font-bold tracking-wider text-gray-500">Most Popular Sport</span>
+      <div class="text-2xl font-bold text-gray-900 mt-1">
+        <%= reportData.length > 0 && reportData[0].count > 0 ? reportData[0].name : 'None yet' %>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">
+        <%= reportData.length > 0 && reportData[0].count > 0 ? reportData[0].count + ' sessions (' + reportData[0].percentage + '%)' : 'No activity recorded' %>
+      </p>
+    </div>
+  </div>
+
+  <!-- Popularity Breakdown Visual Bar Chart & Table -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Visual Relative Popularity Bars -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100 flex items-center space-x-2">
+        <span>📈</span>
+        <span>Relative Popularity Chart</span>
+      </h2>
+
+      <% if (reportData && reportData.length > 0 && totalSessions > 0) { %>
+        <div class="space-y-4">
+          <% reportData.forEach(item => { %>
+            <div>
+              <div class="flex justify-between text-sm font-semibold text-gray-800 mb-1">
+                <span><%= item.name %></span>
+                <span><%= item.count %> sessions (<%= item.percentage %>%)</span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-3.5 rounded-full transition-all duration-500"
+                  style="width: <%= Math.max(item.percentage, 2) %>%;">
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="text-sm text-gray-500 py-8 text-center italic">No sessions found in the selected period to compute popularity distribution.</p>
+      <% } %>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-gray-100">
+        <h2 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
+          <span>📋</span>
+          <span>Sports Breakdown Table</span>
+        </h2>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            <tr>
+              <th class="px-6 py-3">Sport</th>
+              <th class="px-6 py-3">Sessions</th>
+              <th class="px-6 py-3 text-right">Share (%)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% reportData.forEach(item => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-bold text-gray-900"><%= item.name %></td>
+                <td class="px-6 py-4 text-gray-700"><%= item.count %></td>
+                <td class="px-6 py-4 text-right font-semibold text-emerald-600"><%= item.percentage %>%</td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Sessions in Period -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+      <h2 class="text-lg font-bold text-gray-900">Matches Scheduled in Period (<%= sessions.length %>)</h2>
+    </div>
+
+    <% if (sessions && sessions.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            <tr>
+              <th class="px-6 py-3">Sport</th>
+              <th class="px-6 py-3">Date & Time</th>
+              <th class="px-6 py-3">Venue</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% sessions.forEach(sess => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-bold text-gray-900"><%= sess.sport ? sess.sport.name : 'N/A' %></td>
+                <td class="px-6 py-4 text-gray-600"><%= sess.date %> at <%= sess.time %></td>
+                <td class="px-6 py-4 text-gray-600"><%= sess.venue %></td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-bold <%= sess.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' %>">
+                    <%= sess.status %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a href="/sessions/<%= sess.id %>" class="text-xs text-indigo-600 font-semibold hover:underline">
+                    View &rarr;
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="p-8 text-center text-gray-500 italic">No matches scheduled during this period.</div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

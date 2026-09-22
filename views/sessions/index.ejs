@@ -1,0 +1,216 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/messages') %>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900">Sports Sessions</h1>
+      <p class="text-sm text-gray-500 mt-1">Explore upcoming matches, filter by sport or venue, and join open games.</p>
+    </div>
+    <a href="/sessions/new" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg shadow-sm transition flex items-center space-x-2 text-sm">
+      <span>+</span>
+      <span>Create New Session</span>
+    </a>
+  </div>
+
+  <!-- Search / Filter Card (Server-side filtering) -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-8">
+    <div class="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-100">
+      <span class="text-lg">🔍</span>
+      <h2 class="text-base font-bold text-gray-900">Browse & Filter Sessions</h2>
+    </div>
+
+    <form action="/sessions" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <input type="hidden" name="tab" value="<%= activeTab %>">
+
+      <!-- Sport Filter -->
+      <div>
+        <label for="filter-sport" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Sport</label>
+        <select id="filter-sport" name="sport"
+          class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500">
+          <option value="">All Sports</option>
+          <% sports.forEach(s => { %>
+            <option value="<%= s.id %>" <%= filters && filters.sport == s.id ? 'selected' : '' %>>
+              <%= s.name %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Date Filter -->
+      <div>
+        <label for="filter-date" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Date</label>
+        <input type="date" id="filter-date" name="date" value="<%= filters ? filters.date : '' %>"
+          class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-green-500 focus:border-green-500">
+      </div>
+
+      <!-- Venue Filter -->
+      <div>
+        <label for="filter-venue" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Venue</label>
+        <input type="text" id="filter-venue" name="venue" value="<%= filters ? filters.venue : '' %>" placeholder="Enter venue..."
+          class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm placeholder-gray-400 focus:ring-green-500 focus:border-green-500">
+      </div>
+
+      <!-- Actions -->
+      <div class="flex space-x-2">
+        <button type="submit"
+          class="flex-grow bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow text-sm transition">
+          Search / Filter
+        </button>
+        <% if (hasActiveFilters) { %>
+          <a href="/sessions?tab=<%= activeTab %>"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-3 rounded-md text-sm transition flex items-center justify-center"
+            title="Clear current filters">
+            Clear
+          </a>
+        <% } %>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="border-b border-gray-200 mb-8">
+    <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+      <a href="/sessions?tab=available<%= filters && filters.sport ? '&sport=' + filters.sport : '' %><%= filters && filters.date ? '&date=' + filters.date : '' %><%= filters && filters.venue ? '&venue=' + filters.venue : '' %>"
+        class="<%= activeTab === 'available' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2">
+        <span>Available Matches</span>
+        <span class="bg-green-100 text-green-800 text-xs py-0.5 px-2 rounded-full font-bold"><%= availableSessions.length %></span>
+      </a>
+
+      <a href="/sessions?tab=created<%= filters && filters.sport ? '&sport=' + filters.sport : '' %><%= filters && filters.date ? '&date=' + filters.date : '' %><%= filters && filters.venue ? '&venue=' + filters.venue : '' %>"
+        class="<%= activeTab === 'created' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2">
+        <span>My Created Sessions</span>
+        <span class="bg-blue-100 text-blue-800 text-xs py-0.5 px-2 rounded-full font-bold"><%= myCreatedSessions.length %></span>
+      </a>
+
+      <a href="/sessions?tab=joined<%= filters && filters.sport ? '&sport=' + filters.sport : '' %><%= filters && filters.date ? '&date=' + filters.date : '' %><%= filters && filters.venue ? '&venue=' + filters.venue : '' %>"
+        class="<%= activeTab === 'joined' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2">
+        <span>Sessions You Joined</span>
+        <span class="bg-purple-100 text-purple-800 text-xs py-0.5 px-2 rounded-full font-bold"><%= myJoinedSessions.length %></span>
+      </a>
+
+      <a href="/sessions?tab=all<%= filters && filters.sport ? '&sport=' + filters.sport : '' %><%= filters && filters.date ? '&date=' + filters.date : '' %><%= filters && filters.venue ? '&venue=' + filters.venue : '' %>"
+        class="<%= activeTab === 'all' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2">
+        <span>All Sessions</span>
+        <span class="bg-gray-100 text-gray-700 text-xs py-0.5 px-2 rounded-full font-bold"><%= allSessions.length %></span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Session List Container -->
+  <%
+    let displayList = [];
+    let emptyMessage = "No sessions found in this category.";
+    if (activeTab === 'available') {
+      displayList = availableSessions;
+      emptyMessage = hasActiveFilters ? "No sessions found matching your filters." : "No open upcoming sessions right now. Be the first to create one!";
+    } else if (activeTab === 'created') {
+      displayList = myCreatedSessions;
+      emptyMessage = hasActiveFilters ? "No sessions found matching your filters." : "You haven't created any sessions yet.";
+    } else if (activeTab === 'joined') {
+      displayList = myJoinedSessions;
+      emptyMessage = hasActiveFilters ? "No sessions found matching your filters." : "You haven't joined any sessions yet.";
+    } else {
+      displayList = allSessions;
+      emptyMessage = hasActiveFilters ? "No sessions found matching your filters." : "No sessions created in the system yet.";
+    }
+  %>
+
+  <% if (displayList && displayList.length > 0) { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% displayList.forEach(session => { %>
+        <div class="bg-white rounded-xl shadow-sm border <%= session.status === 'cancelled' ? 'border-red-200 bg-red-50/20' : 'border-gray-200 hover:border-green-400' %> p-6 flex flex-col justify-between transition duration-150">
+          <div>
+            <!-- Card Header -->
+            <div class="flex justify-between items-start mb-3">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase <%= session.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
+                <%= session.sport ? session.sport.name : 'Sport' %>
+              </span>
+
+              <% if (session.status === 'cancelled') { %>
+                <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider">Cancelled</span>
+              <% } else if (session.isPast) { %>
+                <span class="bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded font-medium">Past Match</span>
+              <% } else if (session.remainingSlots === 0) { %>
+                <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">Session Full</span>
+              <% } else { %>
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-2 py-0.5 rounded font-semibold">
+                  <%= session.remainingSlots %> slots remaining
+                </span>
+              <% } %>
+            </div>
+
+            <!-- Venue & Date/Time (Clear display of Sport, Date, Time, Venue) -->
+            <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-1"><%= session.venue %></h3>
+            <div class="text-sm text-gray-600 mb-3 space-y-1">
+              <div class="flex items-center space-x-1.5">
+                <span>📅</span>
+                <span class="font-medium"><%= session.date %></span>
+                <span class="text-gray-400">&bull;</span>
+                <span>⏰</span>
+                <span class="font-medium"><%= session.time %></span>
+              </div>
+              <div class="text-xs text-gray-500">
+                Organizer: <span class="font-semibold text-gray-700"><%= session.creator ? session.creator.name : 'Unknown' %></span>
+              </div>
+            </div>
+
+            <!-- Slots / Participants preview -->
+            <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 mb-4 border border-gray-100">
+              <div class="flex justify-between font-medium mb-1">
+                <span>Players Enrolled:</span>
+                <span><%= session.participants ? session.participants.length : 0 %> / <%= session.totalCapacity %></span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <%
+                  const total = session.totalCapacity || 1;
+                  const filled = session.participants ? session.participants.length : 0;
+                  const pct = Math.min(100, Math.round((filled / total) * 100));
+                %>
+                <div class="bg-green-600 h-2 rounded-full" style="width: <%= pct %>%;"></div>
+              </div>
+            </div>
+
+            <% if (session.status === 'cancelled') { %>
+              <div class="bg-red-50 border border-red-200 rounded p-2.5 text-xs text-red-800 mb-4">
+                <strong>Reason:</strong> <%= session.cancellationReason %>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+            <a href="/sessions/<%= session.id %>" class="text-sm font-bold text-green-700 hover:text-green-900">
+              View Slots & Details &rarr;
+            </a>
+
+            <% if (session.isUserJoined) { %>
+              <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">
+                ✓ Joined
+              </span>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+      <span class="text-4xl">🏅</span>
+      <h3 class="text-lg font-bold text-gray-800 mt-3"><%= emptyMessage %></h3>
+      <% if (hasActiveFilters) { %>
+        <p class="text-sm text-gray-500 mt-1">Try relaxing your search criteria or resetting filters.</p>
+        <a href="/sessions?tab=<%= activeTab %>" class="mt-4 inline-block bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-4 py-2 rounded-lg text-sm transition">
+          Clear Filters
+        </a>
+      <% } else { %>
+        <p class="text-sm text-gray-500 mt-1">Check back later or organize your own sports session.</p>
+        <a href="/sessions/new" class="mt-4 inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
+          Create a Match Now
+        </a>
+      <% } %>
+    </div>
+  <% } %>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,93 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/messages') %>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+    <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
+      <span class="text-3xl">🗓️</span>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Create a Sport Session</h1>
+        <p class="text-sm text-gray-500">Host a match and recruit players to join your team or court</p>
+      </div>
+    </div>
+
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+          <% errors.forEach(err => { %>
+            <li><%= err %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form action="/sessions" method="POST" class="space-y-6">
+      <!-- Sport Selection -->
+      <div>
+        <label for="sportId" class="block text-sm font-medium text-gray-700">Sport Category *</label>
+        <select id="sportId" name="sportId" required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+          <option value="">-- Choose a Sport --</option>
+          <% sports.forEach(sport => { %>
+            <option value="<%= sport.id %>" <%= typeof formData !== 'undefined' && formData.sportId == sport.id ? 'selected' : '' %>>
+              <%= sport.name %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Date & Time Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-700">Session Date *</label>
+          <input type="date" id="date" name="date" required min="<%= today %>"
+            value="<%= typeof formData !== 'undefined' && formData.date ? formData.date : today %>"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+        </div>
+
+        <div>
+          <label for="time" class="block text-sm font-medium text-gray-700">Start Time *</label>
+          <input type="time" id="time" name="time" required
+            value="<%= typeof formData !== 'undefined' && formData.time ? formData.time : '18:00' %>"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+        </div>
+      </div>
+
+      <!-- Venue Location -->
+      <div>
+        <label for="venue" class="block text-sm font-medium text-gray-700">Venue / Location *</label>
+        <input type="text" id="venue" name="venue" required
+          placeholder="e.g. Community Center Court 3, City Stadium Field B"
+          value="<%= typeof formData !== 'undefined' && formData.venue ? formData.venue : '' %>"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+      </div>
+
+      <!-- Additional Players Needed -->
+      <div>
+        <label for="additionalPlayersNeeded" class="block text-sm font-medium text-gray-700">
+          Additional Players Needed *
+        </label>
+        <p class="text-xs text-gray-500 mb-1">
+          Specify how many participant slots should be opened (excluding yourself as the organizer).
+        </p>
+        <input type="number" id="additionalPlayersNeeded" name="additionalPlayersNeeded" required min="0" max="100"
+          value="<%= typeof formData !== 'undefined' && typeof formData.additionalPlayersNeeded !== 'undefined' ? formData.additionalPlayersNeeded : '4' %>"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex items-center justify-between pt-6 border-t border-gray-100">
+        <a href="/sessions" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+          &larr; Cancel and Back
+        </a>
+        <button type="submit"
+          class="py-2.5 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition font-bold">
+          Create & Publish Session
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>
