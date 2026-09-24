@@ -89,7 +89,16 @@ module.exports = {
         updatedAt: now
       }
     ], {});
+
+    // Ensure PostgreSQL primary key auto-increment sequences are aligned with inserted IDs
+    if (queryInterface.sequelize.getDialect() === 'postgres') {
+      await queryInterface.sequelize.query(`SELECT setval('"Users_id_seq"', COALESCE((SELECT MAX(id) FROM "Users"), 1));`);
+      await queryInterface.sequelize.query(`SELECT setval('"Sports_id_seq"', COALESCE((SELECT MAX(id) FROM "Sports"), 1));`);
+      await queryInterface.sequelize.query(`SELECT setval('"Sessions_id_seq"', COALESCE((SELECT MAX(id) FROM "Sessions"), 1));`);
+      await queryInterface.sequelize.query(`SELECT setval('"SessionParticipants_id_seq"', COALESCE((SELECT MAX(id) FROM "SessionParticipants"), 1));`);
+    }
   },
+
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('SessionParticipants', null, {});

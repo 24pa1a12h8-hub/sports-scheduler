@@ -10,6 +10,10 @@ require('./config/passport')(passport);
 
 const app = express();
 
+// Trust proxy for Cloud Run HTTPS reverse proxy
+app.set('trust proxy', 1);
+
+
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
