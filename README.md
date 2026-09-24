@@ -6,6 +6,14 @@ A complete, production-ready full-stack web application built for the **WD501 Ad
 
 ---
 
+## 🌐 Live Demo & Video
+
+**Deployed Application:** https://sports-scheduler-ncdh.onrender.com
+
+**Project Demonstration Video:** https://youtu.be/VH6sU93WEcg?si=JI7MDgnRcA71pnfL
+
+---
+
 ## 🌟 Key Features
 
 [svg](https://github.com/24pa1a12h8-hub/sports-scheduler#-key-features)
